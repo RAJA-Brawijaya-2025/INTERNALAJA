@@ -2,7 +2,7 @@ import GoogleProvider from "next-auth/providers/google";
 import type { AuthOptions, Profile } from "next-auth";
 import { db } from "@/lib/db";
 
-// Extend the Session user type to include 'id'
+// Extend the Session user type to include 'id' and 'divisi_id'
 declare module "next-auth" {
   interface Session {
     user: {
@@ -10,7 +10,19 @@ declare module "next-auth" {
       name?: string | null;
       email?: string | null;
       image?: string | null;
+      divisi_id?: number;
+      divisi_nama?: string;
     };
+  }
+}
+
+// Extend JWT token type to include divisi information
+declare module "next-auth/jwt" {
+  interface JWT {
+    id?: number;
+    divisi_id?: number;
+    divisi_nama?: string;
+    picture?: string;
   }
 }
 
@@ -65,28 +77,40 @@ export const authOptions: AuthOptions = {
           );
         }
 
-        // Cek apakah user terdaftar sebagai panitia
+        // Cek apakah user terdaftar sebagai panitia dan get divisi info
         const [panitiaRows] = await db.query(
-          "SELECT id FROM panitia WHERE email = ?",
+          `SELECT 
+            p.id, 
+            p.nama_lengkap, 
+            p.divisi_id,
+            d.nama as divisi_nama
+          FROM panitia p
+          INNER JOIN divisi d ON p.divisi_id = d.id
+          WHERE p.email = ?`,
           [email]
         );
         const isPanitia = Array.isArray(panitiaRows) && panitiaRows.length > 0;
 
-        // Update name di panitia jika ada
-        if (isPanitia && userName) {
+        if (!isPanitia) {
+          return "/?error=NotRegisteredPanitia";
+        }
+
+        // Update name di panitia jika ada dan berbeda
+        const panitiaData = panitiaRows[0] as any;
+        if (userName && panitiaData.nama_lengkap !== userName) {
           await db.query(
             "UPDATE panitia SET nama_lengkap = ? WHERE email = ?",
             [userName, email]
           );
-        } else if (!isPanitia) {
-          return "/?error=NotRegisteredPanitia";
         }
 
-        // Debug: Log Google profile info
-        console.log("🔍 Google Profile Info:", {
+        // Debug: Log user info with divisi
+        console.log("🔍 Sign-in Success - User Info:", {
           email,
           name: userName,
           image: userImage,
+          divisi_id: panitiaData.divisi_id,
+          divisi_nama: panitiaData.divisi_nama,
           profile_picture: googleProfile.picture,
           user_image: user.image
         });
@@ -101,8 +125,19 @@ export const authOptions: AuthOptions = {
     async session({ session, token }) {
       if (session?.user?.email) {
         try {
+          // Get user data with divisi info from database
           const [rows] = await db.query(
-            "SELECT id, email, name, image FROM users WHERE email = ?",
+            `SELECT 
+              u.id, 
+              u.email, 
+              u.name, 
+              u.image,
+              p.divisi_id,
+              d.nama as divisi_nama
+            FROM users u
+            INNER JOIN panitia p ON u.email = p.email
+            INNER JOIN divisi d ON p.divisi_id = d.id
+            WHERE u.email = ?`,
             [session.user.email]
           );
 
@@ -112,6 +147,8 @@ export const authOptions: AuthOptions = {
             
             // Update session dengan data dari database
             session.user.id = dbUser.id;
+            session.user.divisi_id = dbUser.divisi_id;
+            session.user.divisi_nama = dbUser.divisi_nama;
             if (dbUser.name) session.user.name = dbUser.name;
             
             // Prioritaskan Google image dari token, fallback ke database
@@ -126,6 +163,8 @@ export const authOptions: AuthOptions = {
               name: session.user.name,
               email: session.user.email,
               image: session.user.image,
+              divisi_id: session.user.divisi_id,
+              divisi_nama: session.user.divisi_nama,
               source: token.picture ? 'token' : 'database'
             });
           }
@@ -148,6 +187,35 @@ export const authOptions: AuthOptions = {
         const googleProfile = profile as GoogleProfile;
         if (googleProfile.picture) {
           token.picture = googleProfile.picture;
+        }
+
+        // Get divisi info for new login and add to token
+        if (profile.email) {
+          try {
+            const [panitiaRows] = await db.query(
+              `SELECT 
+                p.divisi_id,
+                d.nama as divisi_nama
+              FROM panitia p
+              INNER JOIN divisi d ON p.divisi_id = d.id
+              WHERE p.email = ?`,
+              [profile.email]
+            );
+
+            if (Array.isArray(panitiaRows) && panitiaRows.length > 0) {
+              const panitiaData = panitiaRows[0] as any;
+              token.divisi_id = panitiaData.divisi_id;
+              token.divisi_nama = panitiaData.divisi_nama;
+              
+              console.log("🔍 JWT callback - Added divisi to token:", {
+                email: profile.email,
+                divisi_id: token.divisi_id,
+                divisi_nama: token.divisi_nama
+              });
+            }
+          } catch (error) {
+            console.error("Error adding divisi to token:", error);
+          }
         }
       }
       

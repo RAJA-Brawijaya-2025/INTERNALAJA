@@ -93,6 +93,13 @@ export async function POST(req: Request) {
         dashboardType = "konsumsi";
         console.log(`✅ Konsumsi user detected, redirecting to: ${redirectPath}`);
         break;
+
+      case 11: // PIT - Special case: can access both kestari and konsumsi
+        // Default PIT ke dashboard kestari, tapi mereka punya akses ke keduanya
+        redirectPath = "/dashboardkestari";
+        dashboardType = "pit_special"; // Special type for PIT users
+        console.log(`✅ PIT user detected, redirecting to: ${redirectPath} (has access to both)`);
+        break;
         
       default:
         // Semua divisi lain ke dashboard default
@@ -115,7 +122,13 @@ export async function POST(req: Request) {
         divisi_nama: panitiaData.divisi_nama,
         jabatan_nama: panitiaData.jabatan_nama
       },
-      message: `Access granted for ${panitiaData.divisi_nama} dashboard`
+      message: `Access granted for ${panitiaData.divisi_nama} dashboard`,
+      // Add special permissions info for PIT users
+      specialPermissions: panitiaData.divisi_id === 11 ? {
+        canAccessKestari: true,
+        canAccessKonsumsi: true,
+        note: "PIT users have access to both Kestari and Konsumsi dashboards"
+      } : null
     }, { status: 200 });
 
   } catch (error: any) {
@@ -156,7 +169,7 @@ export async function GET() {
       );
     }
 
-    // Debug: Show divisi mapping
+    // Debug: Show divisi mapping with updated rules
     const [divisiMapping] = await db.query(`
       SELECT 
         d.id as divisi_id,
@@ -165,6 +178,7 @@ export async function GET() {
         CASE 
           WHEN d.id = 6 THEN '/dashboardkestari'
           WHEN d.id = 7 THEN '/dashboardkonsumsi'
+          WHEN d.id = 11 THEN '/dashboardkestari (PIT - can access both)'
           ELSE '/dashboard'
         END as redirect_path
       FROM divisi d
@@ -192,9 +206,14 @@ export async function GET() {
       currentUser: currentUser[0] || null,
       divisiMapping: divisiMapping,
       redirectRules: {
-        "divisi_id = 6": "/dashboardkestari (KESTARI)",
-        "divisi_id = 7": "/dashboardkonsumsi (Konsumsi)", 
+        "divisi_id = 6": "/dashboardkestari (KESTARI only)",
+        "divisi_id = 7": "/dashboardkonsumsi (Konsumsi only)", 
+        "divisi_id = 11": "/dashboardkestari (PIT - can access both kestari & konsumsi)",
         "others": "/dashboard (Default)"
+      },
+      accessMatrix: {
+        dashboardkestari: "Accessible by divisi_id: 6 (KESTARI), 7 (Konsumsi), 11 (PIT)",
+        dashboardkonsumsi: "Accessible by divisi_id: 7 (Konsumsi), 11 (PIT)"
       }
     });
 

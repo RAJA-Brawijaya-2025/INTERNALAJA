@@ -19,6 +19,10 @@ import {
   XCircle,
 } from "lucide-react";
 
+// Import Access Control Components
+import KestariAccessWrapper from "@/components/KestariAccessWrapper";
+import { useKestariAccessCheck } from "@/hooks/useKestariAccess";
+
 // ... (interface definitions tetap sama)
 interface PanitiaData {
   id: number;
@@ -68,11 +72,15 @@ interface StatsData {
   tidakHadirPercentage: number;
 }
 
-export default function DashboardKestari() {
+// Main Dashboard Component (Protected Content)
+function DashboardKestariContent() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { data: session, status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
+  
+  // Access control untuk cek divisi user
+  const { panitiaData } = useKestariAccessCheck();
   
   // State untuk kegiatan dan tanggal
   const [selectedKegiatan, setSelectedKegiatan] = useState("");
@@ -777,10 +785,23 @@ export default function DashboardKestari() {
             <p className="text-sm md:text-base text-gray-600">
               Dashboard pemantauan kehadiran Panitia Raja Brawijaya 2025
             </p>
+            {/* Indicator Divisi User */}
+            {panitiaData && (
+              <div className="mt-2 flex items-center gap-2">
+                <span className="text-xs bg-[#e0f2f7] text-[#4891A1] px-2 py-1 rounded-full font-medium">
+                  {panitiaData.divisi_nama}
+                </span>
+                {panitiaData.divisi_id === 11 && (
+                  <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full font-medium">
+                    Download Access
+                  </span>
+                )}
+              </div>
+            )}
           </div>
           
           <div className="flex gap-3">
-            {/* Debug Toggle */}
+            {/* Debug Toggle - Uncommented for access verification */}
             {/* <button
               onClick={() => setShowDebug(!showDebug)}
               className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
@@ -788,7 +809,7 @@ export default function DashboardKestari() {
                   ? 'bg-[#e0f2f7] text-[#4891A1] border border-[#4891A1]' 
                   : 'bg-gray-100 text-gray-600 border border-gray-300'
               }`}
-              title="Toggle debug mode"
+              title="Toggle debug mode untuk cek access download"
             >
               <Bug size={16} />
               Debug {showDebug ? 'ON' : 'OFF'}
@@ -812,16 +833,19 @@ export default function DashboardKestari() {
               </span>
             </button>
             
-            {/* Download Button */}
-            <button
-              onClick={handleDownload}
-              disabled={filteredPanitiaData.length === 0}
-              className="flex items-center gap-2 bg-white border border-[#4891A1] text-[#4891A1] px-4 md:px-6 py-2 md:py-3 rounded-lg hover:bg-[#e0f2f7] font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base"
-            >
-              <Download size={16} />
-              <span className="hidden md:inline">Download Absensi</span>
-              <span className="md:hidden">Download</span>
-            </button>
+            {/* Download Button - Hanya untuk PIT (divisi_id = 11) */}
+            {panitiaData?.divisi_id === 11 && (
+              <button
+                onClick={handleDownload}
+                disabled={filteredPanitiaData.length === 0}
+                className="flex items-center gap-2 bg-white border border-[#4891A1] text-[#4891A1] px-4 md:px-6 py-2 md:py-3 rounded-lg hover:bg-[#e0f2f7] font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base"
+                title="Download Absensi (Khusus PIT)"
+              >
+                <Download size={16} />
+                <span className="hidden md:inline">Download Absensi</span>
+                <span className="md:hidden">Download</span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -833,6 +857,10 @@ export default function DashboardKestari() {
               Debug Information
             </h3>
             <div className="text-sm text-orange-700 space-y-1">
+              <p><strong>User Divisi ID:</strong> {panitiaData?.divisi_id || 'Not loaded'}</p>
+              <p><strong>User Divisi Name:</strong> {panitiaData?.divisi_nama || 'Not loaded'}</p>
+              <p><strong>Download Access:</strong> {panitiaData?.divisi_id === 11 ? 'Granted (PIT)' : 'Denied (Not PIT)'}</p>
+              <hr className="my-2 border-orange-300" />
               <p><strong>Selected Kegiatan ID:</strong> {selectedKegiatanId}</p>
               <p><strong>Selected Kegiatan:</strong> {selectedKegiatan}</p>
               <p><strong>Selected Day:</strong> {selectedDay}</p>
@@ -1309,5 +1337,14 @@ export default function DashboardKestari() {
         <QrCode size={24} />
       </button>
     </div>
+  );
+}
+
+// Main Exported Component with Access Control
+export default function DashboardKestari() {
+  return (
+    <KestariAccessWrapper>
+      <DashboardKestariContent />
+    </KestariAccessWrapper>
   );
 }
