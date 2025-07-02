@@ -16,6 +16,23 @@ interface DashboardStats {
   divisiStats: DivisiStats[];
 }
 
+interface SpecialPermissions {
+  canAccessKestari: boolean;
+  canAccessKonsumsi: boolean;
+  canAccessDefault: boolean;
+  note: string;
+  additionalRoutes: string[];
+}
+
+interface DivisiAccessResult {
+  hasAccess: boolean;
+  redirectPath: string;
+  dashboardType: string;
+  panitiaData: any;
+  message: string;
+  specialPermissions?: SpecialPermissions;
+}
+
 export default function DashboardDefault() {
   const { data: session, status } = useSession();
   const { userData, loading: userLoading } = useUser();
@@ -24,6 +41,7 @@ export default function DashboardDefault() {
   const [error, setError] = useState<string | null>(null);
   const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null);
   const [statsLoading, setStatsLoading] = useState(true);
+  const [specialPermissions, setSpecialPermissions] = useState<SpecialPermissions | null>(null);
 
   useEffect(() => {
     const checkUserDivisiAndRedirect = async () => {
@@ -53,7 +71,7 @@ export default function DashboardDefault() {
             body: JSON.stringify({ email: session?.user?.email }),
           });
 
-          const result = await response.json();
+          const result: DivisiAccessResult = await response.json();
           
           if (response.ok && result.hasAccess) {
             const { redirectPath, dashboardType, panitiaData } = result;
@@ -62,18 +80,40 @@ export default function DashboardDefault() {
               divisi_id: panitiaData.divisi_id,
               divisi_nama: panitiaData.divisi_nama,
               dashboardType,
-              redirectPath
+              redirectPath,
+              specialPermissions: result.specialPermissions
             });
 
-            // Check apakah perlu redirect
-            if (dashboardType !== 'default') {
-              console.log(`🚀 Redirecting to ${dashboardType} dashboard: ${redirectPath}`);
+            // Set special permissions jika ada
+            if (result.specialPermissions) {
+              setSpecialPermissions(result.specialPermissions);
+            }
+
+            // Logic redirect yang diperbaiki:
+            // 1. KESTARI (divisi_id=6) → redirect ke /dashboardkestari
+            // 2. Konsumsi (divisi_id=7) → redirect ke /dashboardkonsumsi  
+            // 3. PIT (divisi_id=11) → stay di /dashboard dengan special permissions
+            // 4. Others → stay di /dashboard
+            
+            if (dashboardType === 'kestari' && redirectPath === '/dashboardkestari') {
+              console.log(`🚀 KESTARI user, redirecting to: ${redirectPath}`);
               setTimeout(() => {
                 router.push(redirectPath);
               }, 1000);
-              return; // Jangan set isChecking false jika akan redirect
+              return;
+            } else if (dashboardType === 'konsumsi' && redirectPath === '/dashboardkonsumsi') {
+              console.log(`🚀 Konsumsi user, redirecting to: ${redirectPath}`);
+              setTimeout(() => {
+                router.push(redirectPath);
+              }, 1000);
+              return;
+            } else if (dashboardType === 'pit_special' || dashboardType === 'default') {
+              // PIT users dan divisi lain bisa akses dashboard default
+              console.log(`🎯 User stays on default dashboard (${dashboardType})`);
+              setIsChecking(false);
             } else {
-              console.log("🎯 User stays on default dashboard");
+              // Fallback untuk case lain
+              console.log(`🎯 Fallback: User stays on default dashboard`);
               setIsChecking(false);
             }
           } else {
@@ -81,9 +121,9 @@ export default function DashboardDefault() {
             setError(result.error || "Failed to get divisi data");
             setIsChecking(false);
           }
-        } catch (err) {
+        } catch (err: any) {
           console.error("❌ Dashboard: Error checking divisi:", err);
-          setError("Error checking divisi");
+          setError("Error checking divisi: " + err.message);
           setIsChecking(false);
         }
       }
@@ -209,7 +249,7 @@ export default function DashboardDefault() {
     );
   }
 
-  // Main dashboard content - hanya untuk divisi selain KESTARI & Konsumsi
+  // Main dashboard content
   return (
     <div className="space-y-8">
       {/* Header with Raja Brawijaya ornament */}
@@ -237,9 +277,21 @@ export default function DashboardDefault() {
             {/* Dashboard Title */}
             <h1 className="text-4xl font-bold mb-2">Dashboard Admin</h1>
             <p className="text-teal-100">Dashboard Admin Raja Brawijaya 2025</p>
+            
+            {/* Special permissions indicator for PIT users */}
+            {specialPermissions && (
+              <div className="mt-4 inline-flex items-center px-4 py-2 bg-yellow-400 bg-opacity-20 border border-yellow-300 rounded-lg text-yellow-100">
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="text-sm font-medium">Special Access: PIT User</span>
+              </div>
+            )}
           </div>
         </div>
       </div>
+
+
 
       {/* Statistics Cards */}
       <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-8">
@@ -345,6 +397,18 @@ export default function DashboardDefault() {
               </div>
             </div>
           </div>
+
+          {/* Debug info */}
+          {process.env.NODE_ENV === 'development' && (
+            <div className="mt-4 p-3 bg-gray-50 border border-gray-200 rounded text-xs">
+              <strong>Debug Info:</strong> Divisi ID: {userData.divisi_id}
+              {specialPermissions && (
+                <div className="mt-1">
+                  <strong>Special Permissions:</strong> {JSON.stringify(specialPermissions, null, 2)}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>
