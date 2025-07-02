@@ -256,7 +256,7 @@ export default function HomePage() {
         {/* Footer */}
         <div className="mt-8 text-center">
           <p className="text-xs text-gray-500">
-            © 2024 RAJA Brawijaya. Semua hak dilindungi.
+            © 2025 RAJA Brawijaya. Semua hak dilindungi.
           </p>
         </div>
       </div>
