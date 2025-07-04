@@ -104,7 +104,7 @@ export default function Sidebar({ isOpen, onToggle, onClose }: SidebarProps) {
       />
 
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 lg:bg-white lg:shadow-xl lg:z-[80]">
+      <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 lg:bg-white lg:border-r lg:border-gray-200 lg:z-[80]">
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className="shrink-0 p-4 bg-gradient-to-r from-blue-900 to-blue-800 text-white shadow-md">

@@ -4,7 +4,6 @@
 import React, { useCallback, useState } from "react"
 import { signOut } from "next-auth/react"
 import { useRouter } from "next/navigation"
-import Sidebar from "@/components/Sidebar"
 import { useUser } from "@/contexts/UserContext"
 import HeaderContainer from "@/components/layout/header/HeaderContainer"
 import MainSidebarContainer from "@/components/layout/sidebar/container/SidebarContainer"
@@ -230,7 +229,7 @@ export default function PanelLayout({ children }: PanelLayoutProps) {
         )}
 
         {/* Area konten */}
-        <main className={`flex-1 ${isPITUser ? 'lg:ml-64' : ''}`}>
+        <main className={`flex-1 ${isPITUser ? '' : ''}`}>
           <div className="max-w-7xl mx-auto px-4 py-6 lg:px-6 lg:py-8">
             {/* Header dengan Welcome dan Logout Button untuk SEMUA USER */}
             <div className="mb-4 p-4 bg-white border border-gray-200 rounded-lg shadow-sm" 
