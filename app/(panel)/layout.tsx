@@ -6,6 +6,7 @@ import { signOut } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import Sidebar from "@/components/Sidebar"
 import { useUser } from "@/contexts/UserContext"
+import HeaderContainer from "@/components/layout/header/HeaderContainer"
 
 // Type definitions
 interface EnhancedProfileAvatarProps {
@@ -180,6 +181,9 @@ export default function PanelLayout({ children }: PanelLayoutProps) {
   const isPITUser = userData?.isPIT === true
   
   return (
+    <section>
+    <HeaderContainer/>
+    
     <div className="relative flex min-h-screen bg-gray-50">
       {/* ─── Sidebar (hanya tampil jika user PIT) ─── */}
       {isPITUser && (
@@ -313,5 +317,6 @@ export default function PanelLayout({ children }: PanelLayoutProps) {
         </main>
       </div>
     </div>
+    </section>
   )
 }
