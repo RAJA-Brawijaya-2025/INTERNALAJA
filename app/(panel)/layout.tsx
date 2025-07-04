@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation"
 import Sidebar from "@/components/Sidebar"
 import { useUser } from "@/contexts/UserContext"
 import HeaderContainer from "@/components/layout/header/HeaderContainer"
+import MainSidebarContainer from "@/components/layout/sidebar/container/SidebarContainer"
 
 // Type definitions
 interface EnhancedProfileAvatarProps {
@@ -187,7 +188,8 @@ export default function PanelLayout({ children }: PanelLayoutProps) {
     <div className="relative flex min-h-screen bg-gray-50">
       {/* ─── Sidebar (hanya tampil jika user PIT) ─── */}
       {isPITUser && (
-        <Sidebar isOpen={sidebarOpen} onToggle={handleToggle} onClose={handleClose} />
+        <MainSidebarContainer isOpen={sidebarOpen} onToggle={handleToggle} onClose={handleClose} />
+
       )}
 
       {/* ─── Konten ─── */}
