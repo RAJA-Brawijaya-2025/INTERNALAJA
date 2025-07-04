@@ -4,123 +4,6 @@ import { useSession, signIn, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useUser } from "@/contexts/UserContext";
-import { AlertTriangle } from 'lucide-react';
-
-
-const LogoutConfirmation = ({ onConfirm, onCancel }) => {
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="w-full max-w-lg mx-auto relative">
-        {/* Main Container with gradient background */}
-        <div 
-          className="relative rounded-3xl overflow-hidden shadow-2xl"
-          style={{
-            background: 'linear-gradient(180deg, rgba(194, 218, 223, 1) 0%, rgba(224, 236, 239, 1) 20%, rgba(224, 236, 239, 1) 80%, rgba(194, 218, 223, 1) 100%)',
-            height: '395px'
-          }}
-        >
-          {/* Background Batik Pattern */}
-          <div className="absolute inset-0 flex items-center justify-center opacity-50 overflow-hidden">
-            <div className="flex gap-2 w-full h-full -translate-x-8">
-              {/* Batik Pattern 1 */}
-              <div className="w-1/2 h-full bg-gradient-to-br from-slate-300 to-slate-400 opacity-30">
-                <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice">
-                  <defs>
-                    <pattern id="batik1" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
-                      <circle cx="10" cy="10" r="3" fill="none" stroke="currentColor" strokeWidth="0.5"/>
-                      <circle cx="10" cy="10" r="6" fill="none" stroke="currentColor" strokeWidth="0.3"/>
-                      <path d="M5,5 L15,15 M15,5 L5,15" stroke="currentColor" strokeWidth="0.3"/>
-                    </pattern>
-                  </defs>
-                  <rect width="100" height="100" fill="url(#batik1)" className="text-slate-600"/>
-                </svg>
-              </div>
-              
-              {/* Batik Pattern 2 */}
-              <div className="w-1/2 h-full bg-gradient-to-bl from-slate-300 to-slate-400 opacity-30">
-                <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice">
-                  <defs>
-                    <pattern id="batik2" x="0" y="0" width="15" height="15" patternUnits="userSpaceOnUse">
-                      <rect x="2" y="2" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="0.4"/>
-                      <circle cx="7.5" cy="7.5" r="2" fill="none" stroke="currentColor" strokeWidth="0.3"/>
-                      <path d="M0,0 L15,15 M0,15 L15,0" stroke="currentColor" strokeWidth="0.2"/>
-                    </pattern>
-                  </defs>
-                  <rect width="100" height="100" fill="url(#batik2)" className="text-slate-600"/>
-                </svg>
-              </div>
-            </div>
-          </div>
-          
-          {/* Content */}
-          <div className="relative z-10 p-8 sm:p-10 h-full flex flex-col justify-between">
-            {/* White Card */}
-            <div className="bg-white rounded-lg shadow-lg p-6 flex flex-col items-center space-y-4">
-              {/* Status Icon */}
-              <div className="w-28 h-28 sm:w-35 sm:h-35 flex items-center justify-center">
-                <div className="w-full h-full bg-red-50 rounded-full flex items-center justify-center relative">
-                  <AlertTriangle className="w-16 h-16 text-red-500" strokeWidth={1.5} />
-                  <div className="absolute inset-0 rounded-full border-4 border-red-200 animate-pulse"></div>
-                </div>
-              </div>
-              
-              {/* Message */}
-              <h2 
-                className="text-center font-normal leading-tight"
-                style={{
-                  color: '#244850',
-                  fontSize: '20px',
-                  fontFamily: 'system-ui, -apple-system, sans-serif',
-                  lineHeight: '128%',
-                  letterSpacing: '0.005em'
-                }}
-              >
-                Yakin untuk Logout Sekarang?
-              </h2>
-            </div>
-            
-            {/* Button Group */}
-            <div className="flex flex-col sm:flex-row gap-2 mt-9">
-              {/* Back Button */}
-              <button 
-                onClick={onCancel}
-                className="flex-1 text-white font-semibold py-4 px-8 rounded-lg transition-all duration-200 hover:scale-105 shadow-lg"
-                style={{
-                  background: 'linear-gradient(90deg, rgba(72, 145, 161, 1) 0%, rgba(102, 163, 176, 1) 100%)',
-                  fontSize: '14px',
-                  fontFamily: 'system-ui, -apple-system, sans-serif',
-                  lineHeight: '128%',
-                  letterSpacing: '0.005em',
-                  fontWeight: '600'
-                }}
-              >
-                Kembali
-              </button>
-              
-              {/* Logout Button */}
-              <button 
-                onClick={onConfirm}
-                className="flex-1 bg-white font-semibold py-4 px-8 rounded-lg border transition-all duration-200 hover:scale-105 shadow-lg hover:bg-gray-50"
-                style={{
-                  borderColor: '#3c7886',
-                  borderWidth: '1px',
-                  color: '#3c7886',
-                  fontSize: '14px',
-                  fontFamily: 'system-ui, -apple-system, sans-serif',
-                  lineHeight: '128%',
-                  letterSpacing: '0.005em',
-                  fontWeight: '600'
-                }}
-              >
-                Logout
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 export default function HomePage() {
   const { data: session, status } = useSession();
@@ -128,7 +11,6 @@ export default function HomePage() {
   const router = useRouter();
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showLogoutConfirmation, setShowLogoutConfirmation] = useState(false);
 
   // Handle URL error parameters
   useEffect(() => {
