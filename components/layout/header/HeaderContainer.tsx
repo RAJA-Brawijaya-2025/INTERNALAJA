@@ -5,7 +5,7 @@ import Image from 'next/image'
 
 const HeaderContainer = () => {
   return (
-    <section className='w-full'>
+    <section className='w-full sticky'>
         <Image src={HeaderDesk} alt='Nav' className='w-full hidden md:block'/>
         <Image src={HeaderMob} alt='Nav' className='w-full block md:hidden '/>
     </section>
