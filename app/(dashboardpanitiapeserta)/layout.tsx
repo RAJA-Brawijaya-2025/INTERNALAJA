@@ -1,56 +1,57 @@
-"use client"
+"use client";
 
-import React, { useCallback, useState } from "react"
-import { signOut } from "next-auth/react"
-import { useRouter } from "next/navigation"
-import Image from "next/image"
-import Sidebar from "@/components/Sidebar"
-import { useUser } from "@/contexts/UserContext"
+import React, { useCallback, useState } from "react";
+import { signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { useUser } from "@/contexts/UserContext";
+import HeaderContainer from "@/components/layout/header/HeaderContainer";
+import MainSidebarContainer from "@/components/layout/sidebar/container/SidebarContainer";
 
 // Type definitions
 interface EnhancedProfileAvatarProps {
-  imageUrl?: string
-  name?: string
-  size?: "sm" | "md" | "lg" | "xl"
-  showBorder?: boolean
-  borderColor?: string
+  imageUrl?: string;
+  name?: string;
+  size?: "sm" | "md" | "lg" | "xl";
+  showBorder?: boolean;
+  borderColor?: string;
 }
 
 // Enhanced ProfileAvatar Component dengan perfect circle
-const EnhancedProfileAvatar: React.FC<EnhancedProfileAvatarProps> = ({ 
-  imageUrl, 
-  name, 
+const EnhancedProfileAvatar: React.FC<EnhancedProfileAvatarProps> = ({
+  imageUrl,
+  name,
   size = "lg",
   showBorder = true,
-  borderColor = "border-[#4891A1]"
+  borderColor = "border-[#4891A1]",
 }) => {
-  const [imageError, setImageError] = useState(false)
-  
+  const [imageError, setImageError] = useState(false);
+
   // Size configurations with proper typing
   const sizeClasses: Record<string, string> = {
     sm: "w-8 h-8",
-    md: "w-10 h-10", 
+    md: "w-10 h-10",
     lg: "w-12 h-12",
-    xl: "w-16 h-16"
-  }
-  
+    xl: "w-16 h-16",
+  };
+
   const textSizeClasses: Record<string, string> = {
     sm: "text-xs",
     md: "text-sm",
-    lg: "text-base", 
-    xl: "text-xl"
-  }
+    lg: "text-base",
+    xl: "text-xl",
+  };
 
   // Get initials from name with proper typing
   const getInitials = (name?: string): string => {
-    if (!name) return "U"
+    if (!name) return "U";
     return name
       .split(" ")
       .map((word: string) => word.charAt(0))
       .join("")
       .substring(0, 2)
-      .toUpperCase()
-  }
+      .toUpperCase();
+  };
 
   const baseClasses = `
     ${sizeClasses[size]} 
@@ -60,8 +61,8 @@ const EnhancedProfileAvatar: React.FC<EnhancedProfileAvatarProps> = ({
     justify-center 
     overflow-hidden 
     relative
-    ${showBorder ? `border-2 ${borderColor}` : ''}
-  `
+    ${showBorder ? `border-2 ${borderColor}` : ""}
+  `;
 
   return (
     <div className={baseClasses}>
@@ -75,84 +76,92 @@ const EnhancedProfileAvatar: React.FC<EnhancedProfileAvatarProps> = ({
           onError={() => setImageError(true)}
           onLoad={(e) => {
             // Ensure image is properly loaded and centered
-            const target = e.currentTarget as HTMLImageElement
-            target.style.objectPosition = "center center"
+            const target = e.currentTarget as HTMLImageElement;
+            target.style.objectPosition = "center center";
           }}
         />
       ) : (
-        <div 
+        <div
           className={`w-full h-full flex items-center justify-center text-white font-semibold ${textSizeClasses[size]}`}
-          style={{ backgroundColor: '#4891A1' }}
+          style={{ backgroundColor: "#4891A1" }}
         >
           {getInitials(name)}
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
 interface DashboardPanitiaPesertaLayoutProps {
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
-function DashboardPanitiaPesertaLayout({ children }: DashboardPanitiaPesertaLayoutProps) {
-  const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [isLoggingOut, setIsLoggingOut] = useState(false)
-  const { userData, loading, error } = useUser()
-  const router = useRouter()
+function DashboardPanitiaPesertaLayout({
+  children,
+}: DashboardPanitiaPesertaLayoutProps) {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const { userData, loading, error } = useUser();
+  const router = useRouter();
 
-  const handleToggle = useCallback((open: boolean) => setSidebarOpen(open), [])
-  const handleClose = useCallback(() => setSidebarOpen(false), [])
+  const handleToggle = useCallback((open: boolean) => setSidebarOpen(open), []);
+  const handleClose = useCallback(() => setSidebarOpen(false), []);
 
   // Function to handle logout
   const handleLogout = useCallback(async () => {
     try {
-      setIsLoggingOut(true)
-      
+      setIsLoggingOut(true);
+
       // Clear all cookies
       document.cookie.split(";").forEach((c) => {
-        const eqPos = c.indexOf("=")
-        const name = eqPos > -1 ? c.substr(0, eqPos) : c
-        document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/"
-        document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=" + window.location.hostname
-        document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=." + window.location.hostname
-      })
-      
+        const eqPos = c.indexOf("=");
+        const name = eqPos > -1 ? c.substr(0, eqPos) : c;
+        document.cookie =
+          name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+        document.cookie =
+          name +
+          "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=" +
+          window.location.hostname;
+        document.cookie =
+          name +
+          "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=." +
+          window.location.hostname;
+      });
+
       // Sign out from NextAuth
-      await signOut({ 
+      await signOut({
         redirect: false,
-        callbackUrl: "/"
-      })
-      
+        callbackUrl: "/",
+      });
+
       // Clear localStorage and sessionStorage
-      localStorage.clear()
-      sessionStorage.clear()
-      
+      localStorage.clear();
+      sessionStorage.clear();
+
       // Redirect to home page
-      router.push("/")
-      
+      router.push("/");
     } catch (error) {
-      console.error("Error during logout:", error)
+      console.error("Error during logout:", error);
       // Force redirect even if there's an error
-      window.location.href = "/"
+      window.location.href = "/";
     } finally {
-      setIsLoggingOut(false)
+      setIsLoggingOut(false);
     }
-  }, [router])
+  }, [router]);
 
   // Jika masih loading, tampilkan loading state
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50">
         <div className="text-center">
-          <div 
+          <div
             className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4"
-            style={{ borderBottomColor: '#4891A1' }}
+            style={{ borderBottomColor: "#4891A1" }}
           ></div>
           <p className="text-gray-600">Memuat data user...</p>
         </div>
       </div>
-    )
+    );
   }
 
   // Jika ada error, tampilkan error state
@@ -161,13 +170,25 @@ function DashboardPanitiaPesertaLayout({ children }: DashboardPanitiaPesertaLayo
       <div className="flex min-h-screen items-center justify-center bg-gray-50">
         <div className="text-center p-6 bg-red-50 border border-red-200 rounded-lg max-w-md">
           <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L3.348 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            <svg
+              className="w-6 h-6 text-red-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L3.348 16.5c-.77.833.192 2.5 1.732 2.5z"
+              />
             </svg>
           </div>
-          <h3 className="text-lg font-medium text-red-900 mb-2">Terjadi Kesalahan</h3>
+          <h3 className="text-lg font-medium text-red-900 mb-2">
+            Terjadi Kesalahan
+          </h3>
           <p className="text-sm text-red-700 mb-4">{error}</p>
-          <button 
+          <button
             onClick={() => window.location.reload()}
             className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
           >
@@ -175,151 +196,167 @@ function DashboardPanitiaPesertaLayout({ children }: DashboardPanitiaPesertaLayo
           </button>
         </div>
       </div>
-    )
+    );
   }
 
   // Cek apakah user adalah dari divisi PIT - DITAMBAHKAN LOGIC INI!
-  const isPITUser = userData?.isPIT === true
+  const isPITUser = userData?.isPIT === true;
 
-  console.log('🔍 Dashboard Panitia Layout Debug:', {
+  console.log("🔍 Dashboard Panitia Layout Debug:", {
     userData: userData,
     isPIT: userData?.isPIT,
     divisi_id: userData?.divisi_id,
     divisi_nama: userData?.divisi_nama,
-    isPITUser: isPITUser
-  })
+    isPITUser: isPITUser,
+  });
 
   return (
-    <div className="relative flex min-h-screen bg-gray-50">
-      {/* ─── Sidebar (hanya tampil jika user PIT) ─── */}
-      {isPITUser && (
-        <Sidebar isOpen={sidebarOpen} onToggle={handleToggle} onClose={handleClose} />
-      )}
-
-      {/* ─── Konten ─── */}
-      <div className="flex flex-col flex-1">
-        {/* Header mobile (hanya tampil jika user PIT) */}
+    <section>
+      <HeaderContainer/>
+      <div className="relative flex min-h-screen bg-gray-50">
+        {/* ─── Sidebar (hanya tampil jika user PIT) ─── */}
         {isPITUser && (
-          <div className="sticky top-0 z-40 lg:hidden h-14 w-full flex items-center gap-2 border-b"
-               style={{
-                 background: 'rgba(249, 250, 251, 0.95)',
-                 backdropFilter: 'blur(8px)',
-                 borderBottomColor: 'rgba(72, 145, 161, 0.2)'
-               }}>
-            {/* Burger */}
-            <button
-              aria-label="Buka sidebar"
-              className="absolute left-4 p-2"
-              onClick={() => setSidebarOpen(true)}
-            >
-              <svg
-                className="w-6 h-6 text-gray-700"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
-            <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2">
-            </div>
-          </div>
+          <MainSidebarContainer
+            isOpen={sidebarOpen}
+            onToggle={handleToggle}
+            onClose={handleClose}
+          />
         )}
 
-        {/* Area konten */}
-        <main className={`flex-1 ${isPITUser ? 'lg:ml-64' : ''}`}>
-          <div className="max-w-7xl mx-auto px-4 py-6 lg:px-6 lg:py-8">
-            {/* Header dengan Welcome dan Logout Button untuk SEMUA USER */}
-            <div className="mb-4 p-4 bg-white border border-gray-200 rounded-lg shadow-sm" 
-                 style={{
-                   background: 'linear-gradient(135deg, #ffffff 0%, rgba(72, 145, 161, 0.03) 100%)',
-                   borderColor: 'rgba(72, 145, 161, 0.2)',
-                   boxShadow: '0 4px 6px -1px rgba(72, 145, 161, 0.1), 0 2px 4px -1px rgba(72, 145, 161, 0.06)'
-                 }}>
-              <div className="flex items-center justify-between">
-                {/* Welcome Message - untuk SEMUA divisi */}
-                {userData && (
-                  <div className="flex items-center gap-3">
-                    <EnhancedProfileAvatar 
-                      imageUrl={userData.profile_image ?? undefined}
-                      name={userData.nama_lengkap}
-                      size="lg"
-                      showBorder={true}
-                      borderColor="border-[#4891A1]"
-                    />
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">
-                        Selamat datang, {userData.nama_lengkap}
-                      </p>
-                      <p className="text-xs text-gray-600">
-                        {userData.jabatan_nama} - {userData.divisi_nama}
-                      </p>
+        {/* ─── Konten ─── */}
+        <div className="flex flex-col flex-1">
+          {/* Header mobile (hanya tampil jika user PIT) */}
+          {isPITUser && (
+            <div
+              className="sticky top-0 z-40 lg:hidden h-14 w-full flex items-center gap-2 border-b"
+              style={{
+                background: "rgba(249, 250, 251, 0.95)",
+                backdropFilter: "blur(8px)",
+                borderBottomColor: "rgba(72, 145, 161, 0.2)",
+              }}
+            >
+              {/* Burger */}
+              <button
+                aria-label="Buka sidebar"
+                className="absolute left-4 p-2"
+                onClick={() => setSidebarOpen(true)}
+              >
+                <svg
+                  className="w-6 h-6 text-gray-700"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+              <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2"></div>
+            </div>
+          )}
+
+          {/* Area konten */}
+          <main className={`flex-1 ${isPITUser ? "" : ""}`}>
+            <div className="max-w-7xl mx-auto px-4 py-6 lg:px-6 lg:py-8">
+              {/* Header dengan Welcome dan Logout Button untuk SEMUA USER */}
+              <div
+                className="mb-4 p-4 bg-white border border-gray-200 rounded-lg shadow-sm"
+                style={{
+                  background:
+                    "linear-gradient(135deg, #ffffff 0%, rgba(72, 145, 161, 0.03) 100%)",
+                  borderColor: "rgba(72, 145, 161, 0.2)",
+                  boxShadow:
+                    "0 4px 6px -1px rgba(72, 145, 161, 0.1), 0 2px 4px -1px rgba(72, 145, 161, 0.06)",
+                }}
+              >
+                <div className="flex items-center justify-between">
+                  {/* Welcome Message - untuk SEMUA divisi */}
+                  {userData && (
+                    <div className="flex items-center gap-3">
+                      <EnhancedProfileAvatar
+                        imageUrl={userData.profile_image ?? undefined}
+                        name={userData.nama_lengkap}
+                        size="lg"
+                        showBorder={true}
+                        borderColor="border-[#4891A1]"
+                      />
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">
+                          Selamat datang, {userData.nama_lengkap}
+                        </p>
+                        <p className="text-xs text-gray-600">
+                          {userData.jabatan_nama} - {userData.divisi_nama}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {/* Spacer untuk mendorong logout ke kanan */}
-                <div className="flex-1"></div>
+                  {/* Spacer untuk mendorong logout ke kanan */}
+                  <div className="flex-1"></div>
 
-                {/* Logout Button - Selalu di kanan untuk semua user */}
-                <div className="ml-auto">
-                  <button
-                    onClick={handleLogout}
-                    disabled={isLoggingOut}
-                    className="flex items-center gap-2 px-4 py-2 text-white rounded-lg 
+                  {/* Logout Button - Selalu di kanan untuk semua user */}
+                  <div className="ml-auto">
+                    <button
+                      onClick={handleLogout}
+                      disabled={isLoggingOut}
+                      className="flex items-center gap-2 px-4 py-2 text-white rounded-lg 
                                disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm
                                hover:shadow-md transform hover:-translate-y-0.5"
-                    style={{
-                      backgroundColor: '#4891A1',
-                      boxShadow: '0 2px 4px rgba(72, 145, 161, 0.3)'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = '#3a7a87'
-                      e.currentTarget.style.boxShadow = '0 4px 8px rgba(72, 145, 161, 0.4)'
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = '#4891A1'
-                      e.currentTarget.style.boxShadow = '0 2px 4px rgba(72, 145, 161, 0.3)'
-                    }}
-                    aria-label="Logout"
-                  >
-                    {isLoggingOut ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                        <span className="text-sm font-medium">Logging out...</span>
-                      </>
-                    ) : (
-                      <>
-                        <svg 
-                          className="w-4 h-4" 
-                          fill="none" 
-                          stroke="currentColor" 
-                          viewBox="0 0 24 24"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                          <polyline points="16,17 21,12 16,7"></polyline>
-                          <line x1="21" y1="12" x2="9" y2="12"></line>
-                        </svg>
-                        <span className="text-sm font-medium">Logout</span>
-                      </>
-                    )}
-                  </button>
+                      style={{
+                        backgroundColor: "#4891A1",
+                        boxShadow: "0 2px 4px rgba(72, 145, 161, 0.3)",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = "#3a7a87";
+                        e.currentTarget.style.boxShadow =
+                          "0 4px 8px rgba(72, 145, 161, 0.4)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = "#4891A1";
+                        e.currentTarget.style.boxShadow =
+                          "0 2px 4px rgba(72, 145, 161, 0.3)";
+                      }}
+                      aria-label="Logout"
+                    >
+                      {isLoggingOut ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                          <span className="text-sm font-medium">
+                            Logging out...
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16,17 21,12 16,7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                          </svg>
+                          <span className="text-sm font-medium">Logout</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
+
+              {children}
             </div>
-            
-            {children}
-          </div>
-        </main>
+          </main>
+        </div>
       </div>
-    </div>
-  )
+    </section>
+  );
 }
 
 // Export default yang benar
-export default DashboardPanitiaPesertaLayout
+export default DashboardPanitiaPesertaLayout;

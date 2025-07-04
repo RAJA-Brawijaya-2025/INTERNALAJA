@@ -4,8 +4,9 @@
 import React, { useCallback, useState } from "react"
 import { signOut } from "next-auth/react"
 import { useRouter } from "next/navigation"
-import Sidebar from "@/components/Sidebar"
 import { useUser } from "@/contexts/UserContext"
+import HeaderContainer from "@/components/layout/header/HeaderContainer"
+import MainSidebarContainer from "@/components/layout/sidebar/container/SidebarContainer"
 
 // Type definitions
 interface EnhancedProfileAvatarProps {
@@ -180,10 +181,14 @@ export default function PanelLayout({ children }: PanelLayoutProps) {
   const isPITUser = userData?.isPIT === true
   
   return (
+    <section>
+    <HeaderContainer/>
+    
     <div className="relative flex min-h-screen bg-gray-50">
       {/* ─── Sidebar (hanya tampil jika user PIT) ─── */}
       {isPITUser && (
-        <Sidebar isOpen={sidebarOpen} onToggle={handleToggle} onClose={handleClose} />
+        <MainSidebarContainer isOpen={sidebarOpen} onToggle={handleToggle} onClose={handleClose} />
+
       )}
 
       {/* ─── Konten ─── */}
@@ -224,7 +229,7 @@ export default function PanelLayout({ children }: PanelLayoutProps) {
         )}
 
         {/* Area konten */}
-        <main className={`flex-1 ${isPITUser ? 'lg:ml-64' : ''}`}>
+        <main className={`flex-1 ${isPITUser ? '' : ''}`}>
           <div className="max-w-7xl mx-auto px-4 py-6 lg:px-6 lg:py-8">
             {/* Header dengan Welcome dan Logout Button untuk SEMUA USER */}
             <div className="mb-4 p-4 bg-white border border-gray-200 rounded-lg shadow-sm" 
@@ -313,5 +318,6 @@ export default function PanelLayout({ children }: PanelLayoutProps) {
         </main>
       </div>
     </div>
+    </section>
   )
 }
