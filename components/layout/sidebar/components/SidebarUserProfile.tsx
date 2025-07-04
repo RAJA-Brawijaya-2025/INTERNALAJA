@@ -40,14 +40,15 @@ export const SidebarUserProfile: React.FC<SidebarUserProfileProps> = ({
       {/* Logout Button */}
       <button
         onClick={onLogout}
-        className={`w-full flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200 ${
+        className={`w-full flex items-center justify-center gap-3 px-4 py-3 bg-error-700 text-white rounded-lg transition-colors duration-200 ${
           isCollapsed ? 'justify-center' : ''
         }`}
         title="Logout"
       >
+        <span className="font-medium">Logout</span>
         <LogOut size={18} className="flex-shrink-0" />
         {!isCollapsed && (
-          <span className="font-medium">Logout</span>
+          <></>
         )}
       </button>
     </div>

@@ -4,7 +4,6 @@ import React from 'react'
 import { useSidebar } from '../hooks'
 import {
   SidebarContainer,
-  SidebarHeader,
   SidebarNavigation,
   SidebarUserProfile,
   MobileToggle,
@@ -81,11 +80,7 @@ const MainSidebarContainer: React.FC<SidebarProps> = ({
         isOpen={state.isOpen}
         isCollapsed={state.isCollapsed}
       >
-        {/* Header */}
-        <SidebarHeader 
-          isCollapsed={state.isCollapsed}
-        />
-
+        
         {/* Navigation */}
         <SidebarNavigation
           menuItems={menuItems}
