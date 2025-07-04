@@ -1,5 +1,4 @@
 // Re-export all separate components
-export { SidebarHeader } from './SidebarHeader'
 export { MobileToggle } from './MobileToggle'
 export { MobileOverlay } from './MobileOverlay'
 export { ProfileAvatar } from './ProfileAvatar'
@@ -9,7 +8,6 @@ export { SidebarUserProfile } from './SidebarUserProfile'
 export { SidebarWrapper as SidebarContainer } from './SidebarWrapper'
 
 // Default exports for individual imports
-export { default as SidebarHeaderComponent } from './SidebarHeader'
 export { default as MobileToggleComponent } from './MobileToggle'
 export { default as MobileOverlayComponent } from './MobileOverlay'
 export { default as ProfileAvatarComponent } from './ProfileAvatar'
